@@ -1,4 +1,4 @@
-yamlname: Build Cheat DLL
+name: Build Cheat DLL
 on: workflow_dispatch
 jobs:
   build:
