@@ -5,14 +5,14 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
+    - name: Setup Developer Command Prompt
+      uses: ilammy/msvc-dev-cmd@v1
       with:
-        submodules: recursive
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v2
-    - name: Build Solution
-      run: msbuild ACInternal.sln /p:Configuration=Release /p:Platform=x86
+        arch: x86
+    - name: Compile Code Directly
+      run: cl.exe /LD /Fe:ACInternal.dll /O2 /EHsc *.cpp user32.lib gdi32.lib kernel32.lib OpenGL32.lib
     - name: Upload DLL Artifact
       uses: actions/upload-artifact@v4
       with:
         name: AssaultCubeMod
-        path: "**/Release/*.dll"
+        path: "**.dll"
