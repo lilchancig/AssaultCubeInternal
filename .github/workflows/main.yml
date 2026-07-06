@@ -1,0 +1,18 @@
+yamlname: Build Cheat DLL
+on: workflow_dispatch
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+    - name: Build Solution
+      run: msbuild ACInternal.sln /p:Configuration=Release /p:Platform=x86
+    - name: Upload DLL Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: AssaultCubeMod
+        path: "**/Release/*.dll"
