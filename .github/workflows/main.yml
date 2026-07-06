@@ -19,11 +19,11 @@ jobs:
           :: Locate where dllmain.cpp is hidden in the repository and jump there
           for /r %%i in (dllmain.cpp) do if exist "%%i" cd "%%~dpi"
 
-          :: Create a text file containing every single .cpp file in this folder and its subfolders
+          :: Create a text file containing every single .cpp file in this folder
           dir /s /b *.cpp > files.txt
 
-          :: Read the list and compile them all together at once
-          cl.exe /LD /Fe:ACInternal.dll /O2 /EHsc @files.txt user32.lib gdi32.lib kernel32.lib OpenGL32.lib
+          :: Compile with /D_MBCS to fix the GetModuleHandleA wide-char type error
+          cl.exe /LD /Fe:ACInternal.dll /O2 /EHsc /D_MBCS @files.txt user32.lib gdi32.lib kernel32.lib OpenGL32.lib
           
           :: Move the output file to the workspace root for uploading
           copy ACInternal.dll "%GITHUB_WORKSPACE%\ACInternal.dll"
