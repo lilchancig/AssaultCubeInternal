@@ -1,35 +1,14 @@
-name: Build Cheat DLL
-on: 
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Developer Command Prompt
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x86
-
       - name: Recursive Compile All Sources
         shell: cmd
         run: |
-          :: Locate where dllmain.cpp is hidden in the repository and jump there
-          for /r %%i in (dllmain.cpp) do if exist "%%i" cd "%%~dpi"
-
-          :: Create a text file containing every single .cpp file in this folder
+          :: Go back to root workspace so we catch everything
+          cd "%GITHUB_WORKSPACE%"
+          
+          :: Recursively find EVERY .cpp file in the whole project and save to files.txt
           dir /s /b *.cpp > files.txt
-
-          :: Force Unicode defines to match the wide character parameters in Memory.cpp
+          
+          :: Force compile with x86 architecture optimizations and all files
           cl.exe /LD /Fe:ACInternal.dll /O2 /EHsc /DUNICODE /D_UNICODE @files.txt user32.lib gdi32.lib kernel32.lib OpenGL32.lib
           
-          :: Move the output file to the workspace root for uploading
+          :: Copy it cleanly to the workspace root
           copy ACInternal.dll "%GITHUB_WORKSPACE%\ACInternal.dll"
-
-      - name: Upload DLL Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: AssaultCubeMod
-          path: ACInternal.dll
