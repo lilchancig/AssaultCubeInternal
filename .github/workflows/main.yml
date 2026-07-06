@@ -13,11 +13,14 @@ jobs:
         with:
           arch: x86
 
-      - name: Compile Code Directly
+      - name: Compile and Link Module
         shell: cmd
         run: |
-          cd AssaultCubeInternal
-          cl.exe /LD /Fe:../ACInternal.dll /O2 /EHsc dllmain.cpp mem.cpp proc.cpp user32.lib gdi32.lib kernel32.lib OpenGL32.lib
+          dir /s /b dllmain.cpp > source_path.txt
+          set /p SOURCE_FILE=<source_path.txt
+          for /f "delims=" %%i in ("%SOURCE_FILE%") do cd "%%~dpi"
+          cl.exe /LD /Fe:ACInternal.dll /O2 /EHsc dllmain.cpp mem.cpp proc.cpp user32.lib gdi32.lib kernel32.lib OpenGL32.lib
+          copy ACInternal.dll %GITHUB_WORKSPACE%\ACInternal.dll
 
       - name: Upload DLL Artifact
         uses: actions/upload-artifact@v4
