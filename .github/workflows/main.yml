@@ -11,17 +11,27 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v2
+    - name: Setup Developer Command Prompt
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x86
 
-    - name: Build Solution
+    - name: Compile All Source Folders
+      shell: cmd
       run: |
-        msbuild ACinternal.sln /p:Configuration=Release /p:Platform=x86
+        cd "%GITHUB_WORKSPACE%"
+        
+        :: Gather EVERY .cpp file from the project and subfolders
+        dir /s /b *.cpp > files.txt
+        
+        :: Compile using global include paths for headers (/I. and /IACTrampolineHook)
+        cl.exe /LD /Fe:ACInternal.dll /O2 /EHsc /DUNICODE /D_UNICODE /I. /IACTrampolineHook @files.txt user32.lib gdi32.lib kernel32.lib OpenGL32.lib
+        
+        :: Cleanly copy the final output
+        copy ACInternal.dll "%GITHUB_WORKSPACE%\ACInternal.dll"
 
     - name: Upload DLL Artifact
       uses: actions/upload-artifact@v4
       with:
         name: AssaultCubeMod
-        path: |
-          Release/*.dll
-          bin/Release/*.dll
+        path: ACInternal.dll
