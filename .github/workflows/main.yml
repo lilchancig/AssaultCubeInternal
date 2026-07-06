@@ -13,14 +13,23 @@ jobs:
         with:
           arch: x86
 
-      - name: Compile and Link Module
+      - name: Compile Available Code Files
         shell: cmd
         run: |
-          dir /s /b dllmain.cpp > source_path.txt
-          set /p SOURCE_FILE=<source_path.txt
-          for /f "delims=" %%i in ("%SOURCE_FILE%") do cd "%%~dpi"
-          cl.exe /LD /Fe:ACInternal.dll /O2 /EHsc dllmain.cpp mem.cpp proc.cpp user32.lib gdi32.lib kernel32.lib OpenGL32.lib
-          copy ACInternal.dll %GITHUB_WORKSPACE%\ACInternal.dll
+          :: Locate where dllmain.cpp is hidden in the repository
+          for /r %%i in (dllmain.cpp) do if exist "%%i" cd "%%~dpi"
+
+          :: Create a variable containing only the files that actually exist
+          set "FILES_TO_COMPILE="
+          if exist dllmain.cpp set "FILES_TO_COMPILE=%FILES_TO_COMPILE% dllmain.cpp"
+          if exist mem.cpp set "FILES_TO_COMPILE=%FILES_TO_COMPILE% mem.cpp"
+          if exist proc.cpp set "FILES_TO_COMPILE=%FILES_TO_COMPILE% proc.cpp"
+
+          :: Compile whatever files were found
+          cl.exe /LD /Fe:ACInternal.dll /O2 /EHsc %FILES_TO_COMPILE% user32.lib gdi32.lib kernel32.lib OpenGL32.lib
+          
+          :: Move the output file to the workspace root for uploading
+          copy ACInternal.dll "%GITHUB_WORKSPACE%\ACInternal.dll"
 
       - name: Upload DLL Artifact
         uses: actions/upload-artifact@v4
