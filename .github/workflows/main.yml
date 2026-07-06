@@ -22,8 +22,8 @@ jobs:
           :: Create a text file containing every single .cpp file in this folder
           dir /s /b *.cpp > files.txt
 
-          :: Compile with /D_MBCS to fix the GetModuleHandleA wide-char type error
-          cl.exe /LD /Fe:ACInternal.dll /O2 /EHsc /D_MBCS @files.txt user32.lib gdi32.lib kernel32.lib OpenGL32.lib
+          :: Force Unicode defines to match the wide character parameters in Memory.cpp
+          cl.exe /LD /Fe:ACInternal.dll /O2 /EHsc /DUNICODE /D_UNICODE @files.txt user32.lib gdi32.lib kernel32.lib OpenGL32.lib
           
           :: Move the output file to the workspace root for uploading
           copy ACInternal.dll "%GITHUB_WORKSPACE%\ACInternal.dll"
