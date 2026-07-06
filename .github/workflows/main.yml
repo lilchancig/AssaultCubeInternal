@@ -8,19 +8,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Developer Command Prompt
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x86
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
 
-      - name: Compile Code Directly
-        shell: cmd
+      - name: Compile Solution File
         run: |
-          cd AssaultCubeInternal
-          cl.exe /LD /Fe:../ACInternal.dll /O2 /EHsc *.cpp user32.lib gdi32.lib kernel32.lib OpenGL32.lib
+          msbuild AssaultCubeInternal/AssaultCubeInternal.sln /p:Configuration=Release /p:Platform=x86
 
       - name: Upload DLL Artifact
         uses: actions/upload-artifact@v4
         with:
           name: AssaultCubeMod
-          path: ACInternal.dll
+          path: |
+            **/Release/*.dll
+            **/Win32/Release/*.dll
