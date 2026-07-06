@@ -1,14 +1,27 @@
-      - name: Recursive Compile All Sources
-        shell: cmd
-        run: |
-          :: Go back to root workspace so we catch everything
-          cd "%GITHUB_WORKSPACE%"
-          
-          :: Recursively find EVERY .cpp file in the whole project and save to files.txt
-          dir /s /b *.cpp > files.txt
-          
-          :: Force compile with x86 architecture optimizations and all files
-          cl.exe /LD /Fe:ACInternal.dll /O2 /EHsc /DUNICODE /D_UNICODE @files.txt user32.lib gdi32.lib kernel32.lib OpenGL32.lib
-          
-          :: Copy it cleanly to the workspace root
-          copy ACInternal.dll "%GITHUB_WORKSPACE%\ACInternal.dll"
+name: Build Cheat DLL
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Build Solution
+      run: |
+        msbuild ACinternal.sln /p:Configuration=Release /p:Platform=x86
+
+    - name: Upload DLL Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: AssaultCubeMod
+        path: |
+          Release/*.dll
+          bin/Release/*.dll
