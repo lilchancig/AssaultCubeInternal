@@ -13,20 +13,17 @@ jobs:
         with:
           arch: x86
 
-      - name: Compile Available Code Files
+      - name: Recursive Compile All Sources
         shell: cmd
         run: |
-          :: Locate where dllmain.cpp is hidden in the repository
+          :: Locate where dllmain.cpp is hidden in the repository and jump there
           for /r %%i in (dllmain.cpp) do if exist "%%i" cd "%%~dpi"
 
-          :: Create a variable containing only the files that actually exist
-          set "FILES_TO_COMPILE="
-          if exist dllmain.cpp set "FILES_TO_COMPILE=%FILES_TO_COMPILE% dllmain.cpp"
-          if exist mem.cpp set "FILES_TO_COMPILE=%FILES_TO_COMPILE% mem.cpp"
-          if exist proc.cpp set "FILES_TO_COMPILE=%FILES_TO_COMPILE% proc.cpp"
+          :: Create a text file containing every single .cpp file in this folder and its subfolders
+          dir /s /b *.cpp > files.txt
 
-          :: Compile whatever files were found
-          cl.exe /LD /Fe:ACInternal.dll /O2 /EHsc %FILES_TO_COMPILE% user32.lib gdi32.lib kernel32.lib OpenGL32.lib
+          :: Read the list and compile them all together at once
+          cl.exe /LD /Fe:ACInternal.dll /O2 /EHsc @files.txt user32.lib gdi32.lib kernel32.lib OpenGL32.lib
           
           :: Move the output file to the workspace root for uploading
           copy ACInternal.dll "%GITHUB_WORKSPACE%\ACInternal.dll"
